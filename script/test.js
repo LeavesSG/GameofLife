@@ -1,3 +1,6 @@
+
+
+
 class LifeGame{
 
     constructor(width,height){
