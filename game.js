@@ -1,3 +1,5 @@
+
+
 SETTING = {
     frameLength : 10,
     width : 30,
@@ -32,7 +34,7 @@ const APP = {
 
         //Load sprite sheet
         this.app.loader
-                .add('spritesheet', '../statics/lifegame.json')
+                .add('spritesheet', './lifegame.json')
                 .load(setup);
         },
     reset : function(){
