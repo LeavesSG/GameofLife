@@ -40,7 +40,7 @@ class GameControl{
         this.map = [];
         for(let j=0;j<this.h;j++){
             for(let i=0;i<this.w;i++){
-                this.map.push(new Life_Block(i,j,false, this.cellcontainer, this.setting));
+                this.map.push(new Life_Block(i,j,true, this.cellcontainer, this.setting));
             }
         }
     }
@@ -86,7 +86,7 @@ class Life_Block{
     constructor(x0,y0,boolean, cellcontainer, setting){
         this.state = {
             currS : boolean,
-            nextS : true
+            nextS : false
         };
         this.position = {
             x: x0,
@@ -123,18 +123,26 @@ class Life_Block{
         return this.state.nextS;
     }
 
+    display(para = 1){
+        if(this.isAlive()){
+            this.cell.tint = hexdelight(this.setting.color.green, this.aliveframe/this.setting.aliveframe/para);
+        }else{
+            this.cell.tint = hexFade(this.setting.color.blue, this.deadframe/this.setting.deadframe/para);
+        }
+    }
+
     goAlive(){  
         this.state.currS = true;
         this.deadframe = this.setting.deadframe;
         if(this.aliveframe>0) this.aliveframe-=1;
-        this.cell.tint = hexdelight(this.setting.color.green, this.aliveframe/this.setting.aliveframe/1);
+        this.display();
     }
 
     goDead(){
         this.state.currS = false;
         this.aliveframe = this.setting.aliveframe;
         if(this.deadframe>0) this.deadframe-=1;
-        this.cell.tint = hexFade(this.setting.color.blue, this.deadframe/this.setting.deadframe/1);
+        this.display()
     }
 
     absDead(){
@@ -151,12 +159,15 @@ class Life_Block{
     }
 
     hovered(){
-
-
+        if(this.isAlive()){
+            this.cell.tint = 0xaaaaaa;
+        }else{
+            this.cell.tint = 0xcccccc;
+        }
     }
 
     nothovered(){
-
+        this.display();
     }
 
     setNextState(state){
@@ -200,10 +211,10 @@ var controller = {
     _x : 0,
     _y : 0,
     currHovering : false,
-    startControl : function(clicked, hovering, keyDown){
+    startControl : function(clicked, hovering, keyDown, setting){
         window.addEventListener('mousedown', function (e) {
-            this.x = e.pageX;                // deduct the top and left margin of the canvas
-            this.y = e.pageY;
+            this.x = e.pageX - setting.window.width * setting.leftpedding;                // deduct the top and left margin of the canvas
+            this.y = e.pageY - setting.window.height*0.08 - setting.window.height * setting.toppedding;
             clicked(this.x,this.y);
         })
         window.addEventListener('mouseup', function (e) {
@@ -219,8 +230,8 @@ var controller = {
             this.y_touch = false;
         })
         window.addEventListener('mousemove', function (e) {
-            this._x = e.pageX;
-            this._y = e.pageY;
+            this._x = e.pageX - setting.window.width * setting.leftpedding;
+            this._y = e.pageY - setting.window.height*0.08 - setting.window.height * setting.toppedding;
             this.currHovering = hovering(this._x,this._y, this.currHovering);
             
         })
