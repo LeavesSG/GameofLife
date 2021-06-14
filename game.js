@@ -2,14 +2,21 @@
 
 SETTING = {
     frameLength : 10,
-    width : 30,
-    height : 20,
-    animationSpeed : 0.25,
+    width : 80,
+    height : 60,
+    animationSpeed : 0.10,
     scale : 4,
     interval : 5,
     random : 0.8,
     hoverScale : 1.2,
     state : pause,
+    deadframe : 64,
+    aliveframe :8 ,
+    
+    color: {
+        green : 0x3CB371,
+        blue : 0x00008B,
+    },
 
     AUTOSCALE : true,
 }
@@ -28,6 +35,7 @@ const APP = {
         //Set the canvas to full screen size
         this.app.renderer.view.style.position = "absolute";
         this.app.renderer.view.style.display = "block";
+        this.app.renderer.backgroundColor = 0x111111;
         this.app.renderer.autoResize = true;
         this.app.renderer.resize(window.innerWidth*0.9, window.innerHeight);
         if(SETTING.AUTOSCALE) autoScale();
@@ -54,30 +62,16 @@ const APP = {
 
 APP.init();
 
-
-function createAliveCell(textures, pos){
-
-    //Function to create a live cell
-    const cell = new PIXI.AnimatedSprite(textures);
-    cell.x = pos.x * SETTING.frameLength * SETTING.scale;
-    cell.y = pos.y * SETTING.frameLength * SETTING.scale;
-    cell.animationSpeed = SETTING.animationSpeed;
-    cell.scale.set(SETTING.scale);
-    cell.gotoAndPlay(Math.random()*15);
-    cell.visible = true;
-    return cell;
-}
-
-function createDeadCell(pos){
-
-    //Function to create a dead cell
-    const cell = PIXI.Sprite.from(`lifegame-16.png`);
-    cell.x = pos.x * SETTING.frameLength * SETTING.scale;
-    cell.y = pos.y * SETTING.frameLength * SETTING.scale;
-    cell.width = SETTING.frameLength * SETTING.scale;
-    cell.height = SETTING.frameLength * SETTING.scale;
-    cell.visible = false;
-    return cell;
+function createCell(pos){
+    let rectangle = new PIXI.Graphics();
+    // rectangle.lineStyle(4, 0xFF3300, 1);
+    rectangle.beginFill(0xFFFFFF);
+    rectangle.lineStyle(Math.floor(SETTING.frameLength/4), 0xEEEEEE, 1);
+    rectangle.drawRect(0, 0, 10*SETTING.scale, 10*SETTING.scale);
+    rectangle.endFill();
+    rectangle.x = pos.x * SETTING.frameLength * SETTING.scale;;
+    rectangle.y = pos.y * SETTING.frameLength * SETTING.scale;;
+    return rectangle;
 }
 
 function createText(text, container, pos){
@@ -103,23 +97,15 @@ function setup() {
 
 function initAPP(){
     //Initalize cell containers
-    const deadCells = new PIXI.Container();
-    const aliveCells = new PIXI.Container();
-    APP.app.stage.addChild(aliveCells);
-    APP.app.stage.addChild(deadCells);
 
-    // create an array to store the live cell textures
-    const aliveCellTextures = [];   
-    for (let i = 0; i < 16; i++) {
-        const texture_alive = PIXI.Texture.from(`lifegame-${i}.png`);
-        aliveCellTextures.push(texture_alive);
-    }
+    const cells = new PIXI.Container();
+
+    APP.app.stage.addChild(cells);
 
     //Fill up the container with cells
     for(let j=0; j<SETTING.height;j++){
         for(let i=0; i<SETTING.width;i++){
-            aliveCells.addChild(createAliveCell(aliveCellTextures, {x:i,y:j}));
-            deadCells.addChild(createDeadCell({x:i,y:j}));
+            cells.addChild(createCell({x:i,y:j}));
         }
     }
 
@@ -137,7 +123,7 @@ function initAPP(){
 
 
     //Initalize Game Control
-    APP.game = new GameControl(SETTING, aliveCells, deadCells);
+    APP.game = new GameControl(SETTING, cells);
 }
 
 
@@ -147,12 +133,12 @@ function gameLoop(delta){
 }
 
 function pause(delta){
-    APP.app.stage.children[2].children[5].text = "暂停中";
+    APP.app.stage.children[1].children[5].text = "暂停中";
 }
 
 function play(delta){
-    APP.app.stage.children[2].children[5].text = "运行中";
-    APP.app.stage.children[2].children[6].text = "游戏帧：    "+APP.game_frame;
+    APP.app.stage.children[1].children[5].text = "运行中";
+    APP.app.stage.children[1].children[6].text = "游戏帧：    "+APP.game_frame;
     APP.game_frame++;
     if(APP.game_frame%SETTING.interval==0)APP.game.loop();
 
@@ -205,6 +191,7 @@ function keyDown(keycode){
             SETTING.height+=2;
         }
         APP.reset();
+        APP.game.randomStatus();
     }
     if(keycode == 189){
         state = pause;
@@ -213,6 +200,7 @@ function keyDown(keycode){
             SETTING.height-=2;
         }
         APP.reset();
+        APP.game.randomStatus();
     }
 }
 
