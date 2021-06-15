@@ -1,26 +1,26 @@
 
 
 SETTING = {
-    frameLength : 10,
-    width : 80,
-    height : 60,
-    animationSpeed : 0.10,
-    scale : 4,
-    interval : 5,
-    random : 0.8,
-    hoverScale : 1.2,
-    state : pause,
-    deadframe : 64,
-    aliveframe :8 ,
-    leftpedding : 0.05,
-    toppedding : 0.04,
+    frameLength : 10,       // the init length of each cell 
+    width : 80,             // number of cells in a row
+    height : 60,            // number of cells in a column
+    animationSpeed : 0.10,  // animation speed for gif based sprites(not used any more!)
+    scale : 4,              // multiplier for the cell size
+    interval : 5,           // frame intervals between every to screen update
+    spawnrate : 0.8,        // used for random spawn
+    hoverScale : 1.2,       // cell re-scale when hovering(not used any more!)
+    deadframe : 64,         // frames dead body remains 
+    aliveframe :32 ,         // frames alive cell turns stable
+    leftpedding : 0.05,     // left padding of the screen
+    toppedding : 0.04,      // right pedding of the screen
     
-    color: {
-        green : 0x3CB371,
-        blue : 0x00008B,
+    color: {                // color used to represent the cell status
+        green : 0x008800,   
+        blue : 0x37474f,    
     },
 
-    AUTOSCALE : true,
+    AUTOSCALE : true,       // wheather the cell size will re-scale with the window
+    state : pause,          // game initial state
 }
 
 const APP = {
@@ -48,7 +48,9 @@ const APP = {
                 .add('spritesheet', './lifegame.json')
                 .load(setup);
         },
+
     reset : function(){
+        // remove the children of the app stage and forced re-scale
         this.app.stop;
         if(SETTING.AUTOSCALE) autoScale();
         while(this.app.stage.children.length>0){
@@ -63,6 +65,7 @@ const APP = {
 APP.init();
 
 function createCell(pos){
+    // create a cell on map with given location
     let rectangle = new PIXI.Graphics();
     // rectangle.lineStyle(4, 0xFF3300, 1);
     rectangle.beginFill(0xFFFFFF)
@@ -75,6 +78,7 @@ function createCell(pos){
 }
 
 function createText(text, container, pos){
+    // create a text object
     const gametext = new PIXI.Text(text);
     gametext.style.fontFamily= "sans-serif";
     gametext.position.set(pos.x,pos.y);
@@ -89,11 +93,11 @@ function createText(text, container, pos){
 
 function setup() {
     initAPP();
-    //
+    // ticker basic settings
     state = SETTING.state;
     APP.app.ticker.add(delta => gameLoop(delta));
     
-    // start animating
+    // start simulating
     APP.app.start();
     APP.game_frame = 0;
     controller.startControl(clicked, hovering, keyDown, SETTING);
@@ -116,14 +120,15 @@ function initAPP(){
     //Initalize Game Text
     const helpwords = new PIXI.Container();
     APP.app.stage.addChild(helpwords);
-    createText("康威的生命游戏",helpwords,{x:window.innerWidth*0.65,y:50});
-    createText("按Enter键开始/暂停演化",helpwords,{x:window.innerWidth*0.65,y:100});
-    createText("按Back键清屏",helpwords,{x:window.innerWidth*0.65,y:150});
-    createText("按R键随机放置活细胞",helpwords,{x:window.innerWidth*0.65,y:200});
-    createText("按-/+键改变细胞密度",helpwords,{x:window.innerWidth*0.65,y:250});
+    createText("Conway's Game of Life",helpwords,{x:window.innerWidth*0.65,y:50});
+    createText("Press ENTER to start/pause simulation",helpwords,{x:window.innerWidth*0.65,y:100});
+    createText("Press DELETE to clear the screen",helpwords,{x:window.innerWidth*0.65,y:150});
+    createText("Press R to randomly respawn the cells",helpwords,{x:window.innerWidth*0.65,y:200});
+    createText("Press +/- to rescale",helpwords,{x:window.innerWidth*0.65,y:250});
 
-    createText("暂停中",helpwords,{x:window.innerWidth*0.65,y:450});
-    createText("游戏帧：    "+APP.game_frame,helpwords,{x:window.innerWidth*0.65,y:500});
+    createText("PAUSE",helpwords,{x:window.innerWidth*0.65,y:450});
+    createText("Game Frame：    "+APP.game_frame,helpwords,{x:window.innerWidth*0.65,y:500});
+    createText("Alive cell count:  "+APP.game_frame,helpwords,{x:window.innerWidth*0.65,y:550});
 
 
     //Initalize Game Control
@@ -137,18 +142,21 @@ function gameLoop(delta){
 }
 
 function pause(delta){
-    APP.app.stage.children[1].children[5].text = "暂停中";
+    APP.app.stage.children[1].children[5].text = "PAUSE";
+    APP.app.stage.children[1].children[7].text = "Alive cell count:  "+APP.game.getAliveNums();
 }
 
 function play(delta){
-    APP.app.stage.children[1].children[5].text = "运行中";
-    APP.app.stage.children[1].children[6].text = "游戏帧：    "+APP.game_frame;
+    APP.app.stage.children[1].children[5].text = "Simulating";
+    APP.app.stage.children[1].children[6].text = "Game Frame：    "+APP.game_frame;
+    APP.app.stage.children[1].children[7].text = "Alive cell count:  "+APP.game.getAliveNums();
     APP.game_frame++;
     if(APP.game_frame%SETTING.interval==0)APP.game.loop();
 
 }
 
 function clicked(x0, y0){
+    // method when a cell is clicked
     let x = Math.floor(x0 / (SETTING.frameLength * SETTING.scale));
     let y = Math.floor(y0 / (SETTING.frameLength * SETTING.scale));
     if(x>=0 && x<SETTING.width && y>=0 && y<SETTING.height){
@@ -157,6 +165,7 @@ function clicked(x0, y0){
 }
 
 function hovering(x0, y0, lasthover){
+    // method when a cell is hovering
     let x = Math.floor(x0 / (SETTING.frameLength * SETTING.scale));
     let y = Math.floor(y0 / (SETTING.frameLength * SETTING.scale));
     currenthover = APP.game.map[y* SETTING.width + x];
@@ -172,6 +181,7 @@ function hovering(x0, y0, lasthover){
 }
 
 function keyDown(keycode){
+    // keyboard control
     if(keycode == 13){
         state == play ? state = pause : state = play;
     }
