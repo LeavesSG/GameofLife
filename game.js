@@ -2,20 +2,20 @@
 
 var SETTING = {
     frameLength : 10,       // the init length of each cell 
-    width : 80,             // number of cells in a row
-    height : 60,            // number of cells in a column
+    width : 240,             // number of cells in a row
+    height : 180,            // number of cells in a column
     animationSpeed : 0.10,  // animation speed for gif based sprites(not used any more!)
     scale : 4,              // multiplier for the cell size
-    interval : 5,           // frame intervals between every to screen update
-    spawnrate : 0.8,        // used for random spawn
+    spawnrate : 0.92,        // used for random spawn
     hoverScale : 1.2,       // cell re-scale when hovering(not used any more!)
-    deadframe : 64,         // frames dead body remains 
-    aliveframe :32 ,         // frames alive cell turns stable
+    deadframe : 96,         // frames dead body remains 
+    aliveframe : 64,         // frames alive cell turns stable
     leftpedding : 0.05,     // left padding of the screen
     toppedding : 0.04,      // right pedding of the screen
+    maxFPS:30,
     
     color: {                // color used to represent the cell status
-        green : 0x008800,   
+        green : 0x00AAff,   
         blue : 0x37474f,    
     },
 
@@ -31,8 +31,8 @@ const APP = {
 
         //Create a Pixi Application
         this.app = new PIXI.Application({width: 1280, height: 720});
-        const loader = PIXI.Loader.shared;
         this.app.stop();
+
         //Add the canvas that Pixi automatically created for you to the HTML document
         document.body.appendChild(this.app.view);
 
@@ -98,7 +98,8 @@ function setup() {
     // ticker basic settings
     state = SETTING.state;
     APP.app.ticker.add(delta => gameLoop(delta));
-    
+    APP.app.ticker.maxFPS = SETTING.maxFPS;
+
     // start simulating
     APP.app.start();
     APP.game_frame = 0;
@@ -149,11 +150,11 @@ function pause(delta){
 }
 
 function play(delta){
-    APP.app.stage.children[1].children[5].text = "Simulating";
+    APP.app.stage.children[1].children[5].text = "Simulating    FPS:" + Math.floor(APP.app.ticker.FPS*100)/100;
     APP.app.stage.children[1].children[6].text = "Game Frame：    "+APP.game_frame;
     APP.app.stage.children[1].children[7].text = "Alive cell count:  "+APP.game.getAliveNums();
     APP.game_frame++;
-    if(APP.game_frame%SETTING.interval==0)APP.game.loop();
+    APP.game.loop();
 
 }
 
@@ -202,38 +203,36 @@ function keyDown(keycode){
     }
     if(keycode == 187){         // +
         state = pause;
-        if(SETTING.width < 90){
-            SETTING.width+=3;
-            SETTING.height+=2;
+        lastWidth = SETTING.width;
+        if(SETTING.width < 300){
+            SETTING.width = Math.floor(lastWidth * 1.2);
+            SETTING.height = Math.floor(lastWidth *1.2 *6/8);
         }
         APP.reset();
         APP.game.randomStatus();
     }
     if(keycode == 189){         // -
         state = pause;
-        if(SETTING.width >15){
-            SETTING.width-=3;
-            SETTING.height-=2;
+        lastWidth = SETTING.width;
+        if(SETTING.width >30){
+            SETTING.width = Math.floor(lastWidth / 1.2);
+            SETTING.height = Math.floor(lastWidth *6/8/1.2);
         }
         APP.reset();
         APP.game.randomStatus();
     }
     if(keycode == 83){          // B
-        pattern_buffer = [];
         stringNum = "";
         for(let i=0;i<APP.game.map.length;i++){
-            APP.game.map[i].isAlive() ? pattern_buffer.push(true) : pattern_buffer.push(false);
             APP.game.map[i].isAlive() ? stringNum+="1" : stringNum+="0";
         }
-        console.log(stringNum);
-        localStorage.setItem("myPattern", pattern_buffer)
+        localStorage.setItem("myPattern", stringNum)
     }
     if(keycode == 80){          // B
-        console.log(localStorage.getItem("myPattern"))
-        pattern_buffer = localStorage.getItem("myPattern")
-        if(pattern_buffer.length = APP.game.map.length){
-            for(let i=0;i<pattern_buffer.length;i++){
-                pattern_buffer[i] ? APP.game.map[i].absAlive() :  APP.game.map[i].absDead();
+        stringNums = localStorage.getItem("myPattern")
+        if(stringNums.length = APP.game.map.length){
+            for(let i=0;i<APP.game.map.length;i++){
+                stringNums[i]=="1" ? APP.game.map[i].absAlive() :  APP.game.map[i].absDead();
             }
         }
     }

@@ -48,11 +48,14 @@ class GameControl{
         this.map = [];
         for(let j=0;j<this.h;j++){
             for(let i=0;i<this.w;i++){
-                this.map.push(new Life_Block(i,j, this.cellcontainer, this.setting));
+                let lifeblock = new Life_Block(i,j, this.cellcontainer, this.setting)
+                OPEN_SCREEN.data[Math.floor(j/3)*80+Math.floor(i/3)]==1 ? lifeblock.absAlive() : lifeblock.absDead();
+                this.map.push(lifeblock);
+                
             }
         }
         for(let i=0;i<this.map.length;i++){
-            OPEN_SCREEN.data[i]==1 ? this.map[i].absAlive() : this.map[i].absDead();
+
         }
     }
 
@@ -166,7 +169,7 @@ class Life_Block{
     display(para = 1){
         //change the bg-color of the related sprite based on alive state
         if(this.isAlive()){
-            this.cell.tint = hexdelight(this.setting.color.green, 0.15*this.aliveframe/this.setting.aliveframe+0.85);
+            this.cell.tint = hexDeviate(this.setting.color.green, this.aliveframe/this.setting.aliveframe);
         }else{
             this.cell.tint = hexFade(this.setting.color.blue, this.deadframe/this.setting.deadframe/para);
         }
@@ -193,14 +196,14 @@ class Life_Block{
         this.state.currS = false;
         this.deadframe = 0;
         this.aliveframe = this.setting.aliveframe;
-        this.cell.tint = hexFade(this.setting.color.blue, this.deadframe/this.setting.deadframe);
+        this.display();
     }
 
     absAlive(){
         // go alive without animation(without stable signal)
         this.state.currS = true;
         this.aliveframe = 0;
-        this.cell.tint = hexdelight(this.setting.color.green, 0.15*this.aliveframe/this.setting.aliveframe+0.85);
+        this.display();
     }
 
     hovered(){
@@ -317,6 +320,13 @@ function hexdelight(hex, para){
     let green = 255-Math.floor((255-hex2Array(hex)[1])*para)
     let blue = 255-Math.floor((255-hex2Array(hex)[2])*para)
 
+    return Math.floor(red)*65536+Math.floor(green)*256+Math.floor(blue)*1;
+}
+
+function hexDeviate(hex, para){
+    let red = (para/300+1)*Math.floor(hex/65536);
+    let green = (para/300+1)*Math.floor((hex - red*65536)/256);
+    let blue = (para/300+1)*Math.floor(hex - red*65536 - green*256); 
     return Math.floor(red)*65536+Math.floor(green)*256+Math.floor(blue)*1;
 }
 
