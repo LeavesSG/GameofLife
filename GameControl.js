@@ -48,8 +48,11 @@ class GameControl{
         this.map = [];
         for(let j=0;j<this.h;j++){
             for(let i=0;i<this.w;i++){
-                this.map.push(new Life_Block(i,j,true, this.cellcontainer, this.setting));
+                this.map.push(new Life_Block(i,j, this.cellcontainer, this.setting));
             }
+        }
+        for(let i=0;i<this.map.length;i++){
+            OPEN_SCREEN.data[i]==1 ? this.map[i].absAlive() : this.map[i].absDead();
         }
     }
 
@@ -119,9 +122,9 @@ class GameControl{
 
 
 class Life_Block{
-    constructor(x0,y0,boolean, cellcontainer, setting){
+    constructor(x0,y0, cellcontainer, setting){
         this.state = {//determine wheather the block is alive or dead 
-            currS : boolean,
+            currS : true,
             nextS : false
         };
         this.position = { //position on the map grid 

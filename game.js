@@ -1,6 +1,6 @@
 
 
-SETTING = {
+var SETTING = {
     frameLength : 10,       // the init length of each cell 
     width : 80,             // number of cells in a row
     height : 60,            // number of cells in a column
@@ -22,6 +22,8 @@ SETTING = {
     AUTOSCALE : true,       // wheather the cell size will re-scale with the window
     state : pause,          // game initial state
 }
+
+var pattern_buffer = OPEN_SCREEN.data;
 
 const APP = {
     init : function(){
@@ -182,23 +184,23 @@ function hovering(x0, y0, lasthover){
 
 function keyDown(keycode){
     // keyboard control
-    if(keycode == 13){
+    if(keycode == 13){          // ENTER
         state == play ? state = pause : state = play;
     }
 
-    if(keycode == 82){
+    if(keycode == 82){          // R
         state = pause;
         APP.game.randomStatus();
     }
-    if(keycode == 8){
+    if(keycode == 8){           //BACK
         state = pause;
         APP.game.resetStatus();
     }
-    if(keycode == 66){
+    if(keycode == 66){          // B
         state = pause;
         APP.game.rebirthStatus();
     }
-    if(keycode == 187){
+    if(keycode == 187){         // +
         state = pause;
         if(SETTING.width < 90){
             SETTING.width+=3;
@@ -207,7 +209,7 @@ function keyDown(keycode){
         APP.reset();
         APP.game.randomStatus();
     }
-    if(keycode == 189){
+    if(keycode == 189){         // -
         state = pause;
         if(SETTING.width >15){
             SETTING.width-=3;
@@ -215,6 +217,25 @@ function keyDown(keycode){
         }
         APP.reset();
         APP.game.randomStatus();
+    }
+    if(keycode == 83){          // B
+        pattern_buffer = [];
+        stringNum = "";
+        for(let i=0;i<APP.game.map.length;i++){
+            APP.game.map[i].isAlive() ? pattern_buffer.push(true) : pattern_buffer.push(false);
+            APP.game.map[i].isAlive() ? stringNum+="1" : stringNum+="0";
+        }
+        console.log(stringNum);
+        localStorage.setItem("myPattern", pattern_buffer)
+    }
+    if(keycode == 80){          // B
+        console.log(localStorage.getItem("myPattern"))
+        pattern_buffer = localStorage.getItem("myPattern")
+        if(pattern_buffer.length = APP.game.map.length){
+            for(let i=0;i<pattern_buffer.length;i++){
+                pattern_buffer[i] ? APP.game.map[i].absAlive() :  APP.game.map[i].absDead();
+            }
+        }
     }
 }
 
