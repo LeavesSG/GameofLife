@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "gasp": "^0.0.2",
+    "gsap": "^3.7.0",
     "vue": "^3.0.0"
   },
   "devDependencies": {
